@@ -163,16 +163,15 @@
     addBadgeSlot(badgeGrid, video);
   }
 
- if (badge.name === "nana the ape - dig it deep") {
+ if (badge.name === "NaNa The Ape – Dig it Deep") {
   const video = document.createElement("video");
   video.autoplay = true;
   video.loop = true;
   video.muted = true;
   video.playsInline = true;
-  video.innerHTML = "Your browser does not support the video tag.";
 
   const source = document.createElement("source");
-  source.src = "digitdeep.mp4";
+  source.src = "digitdeep.mp4"; // ensure this file is in the same directory
   source.type = "video/mp4";
 
   video.appendChild(source);
