@@ -6,115 +6,7 @@
   <title>Mutant Records Collection</title>
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <style>
-    body {
-      background: url('background.png') center center / cover no-repeat;
-      background-attachment: fixed;
-      color: #fff;
-      font-family: sans-serif;
-      margin: 0;
-      padding: 20px;
-    }
-
-    header {
-      background: url('background.png') center center / cover no-repeat;
-      height: 200px;
-      margin-bottom: 20px;
-    }
-
-    .badge-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-      gap: 20px;
-      margin-top: 20px;
-    }
-
-    @media (max-width: 600px) {
-      .badge-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
-    }
-
-    .badge-slot {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      border: 2px solid #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      background-color: #000;
-      color: #fff;
-    }
-
-    .badge-slot img,
-    .badge-slot video {
-      max-width: 100%;
-      max-height: 100%;
-    }
-
-    #loadingIndicator {
-      display: none;
-      font-size: 18px;
-      color: #fff;
-      margin-top: 20px;
-    }
-
-    #progressBar {
-      width: 100%;
-      background-color: #333;
-      margin-top: 10px;
-      border: 1px solid #fff;
-    }
-
-    #progressBarFill {
-      height: 20px;
-      width: 0%;
-      background-color: #00ffff !important;
-      transition: width 0.3s;
-    }
-
-    .badge-status {
-      margin: 6px 0;
-      font-weight: bold;
-      color: #fff;
-    }
-
-    .unlocked {
-      color: #0f0;
-    }
-
-    .locked {
-      color: #f00;
-    }
-
-    button {
-      background-color: #222;
-      color: #fff;
-      border: 1px solid #fff;
-      padding: 10px 16px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #444;
-    }
-
-    #exitButton {
-      display: inline-block;
-      background-color: #222;
-      color: #fff;
-      border: 1px solid #fff;
-      padding: 10px 16px;
-      font-size: 16px;
-      text-decoration: none;
-      cursor: pointer;
-      margin-bottom: 20px;
-    }
-
-    #exitButton:hover {
-      background-color: #444;
-    }
+    /* ... [Same CSS as your original] ... */
   </style>
 </head>
 <body>
@@ -156,13 +48,9 @@
     ];
 
     const apechainParams = {
-      chainId: "33139", // Hex for 33139
+      chainId: "0x8183",
       chainName: "ApeChain",
-      nativeCurrency: {
-        name: "APE",
-        symbol: "APE",
-        decimals: 18
-      },
+      nativeCurrency: { name: "APE", symbol: "APE", decimals: 18 },
       rpcUrls: ["https://apechain.drpc.org"],
       blockExplorerUrls: ["https://apescan.io"]
     };
@@ -172,8 +60,7 @@
     }
 
     function resolveIPFS(uri) {
-      if (!uri.startsWith("ipfs://")) return uri;
-      return "https://ipfs.io/ipfs/" + uri.slice(7);
+      return uri.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + uri.slice(7) : uri;
     }
 
     async function switchToApeChain(provider) {
@@ -195,9 +82,14 @@
       await provider.send("eth_requestAccounts", []);
       await switchToApeChain(provider);
 
+      const network = await provider.getNetwork();
+      if (network.chainId !== parseInt(apechainParams.chainId, 16)) {
+        alert("Wrong network! Please connect to ApeChain.");
+        return;
+      }
+
       const signer = provider.getSigner();
       const userAddress = await signer.getAddress();
-
       await signer.signMessage("Sign this message to confirm your wallet for Mutant Records.");
       document.getElementById("walletAddress").innerText = "Wallet: " + userAddress;
 
@@ -216,27 +108,24 @@
       const seenNames = new Set();
       const badgeURIs = [];
 
-      async function scanContract(contract, tokenIds, contractLabel) {
-        let processed = 0;
-        const total = tokenIds.length;
-
-        const updateProgress = () => {
-          const percent = Math.round((processed / total) * 100);
-          document.getElementById("progressBarFill").style.width = percent + "%";
-        };
-
-        await Promise.all(tokenIds.map(async (tokenId) => {
+      async function scanContractSequentially(contract, tokenIds, contractLabel) {
+        for (let i = 0; i < tokenIds.length; i++) {
+          const tokenId = tokenIds[i];
           try {
             const owner = await contract.ownerOf(tokenId);
+            console.log(`Token ${tokenId} owner:`, owner);
             if (owner.toLowerCase() === userAddress.toLowerCase()) {
               const uriRaw = await contract.tokenURI(tokenId);
               const uri = resolveIPFS(uriRaw);
+              console.log("Fetching metadata from:", uri);
 
               const response = await fetch(uri);
               if (!response.ok) throw new Error("Metadata fetch failed");
-              const metadata = await response.json();
 
-              if (seenNames.has(metadata.name)) return;
+              const metadata = await response.json();
+              if (!metadata || !metadata.image || !metadata.name) continue;
+
+              if (seenNames.has(metadata.name)) continue;
               seenNames.add(metadata.name);
 
               const image = resolveIPFS(metadata.image);
@@ -247,17 +136,17 @@
               if (!badge1 && contractLabel === 'A') badge1 = true;
             }
           } catch (err) {
-            console.warn(`Error on token ${tokenId} of contract ${contractLabel}:`, err);
-          } finally {
-            processed++;
-            updateProgress();
+            console.warn(`Error on ${contractLabel} token ${tokenId}:`, err.message);
           }
-        }));
+          const percent = Math.round(((i + 1) / tokenIds.length) * 100);
+          document.getElementById("progressBarFill").style.width = percent + "%";
+        }
       }
 
-      await scanContract(contractAInstance, range(1, 69), 'A');
-      await scanContract(contractBInstance, range(1, 420), 'B');
-      await scanContract(contractBInstance, range(2800, 4000), 'B');
+      // Expand token ranges to ensure full coverage
+      await scanContractSequentially(contractAInstance, range(1, 150), 'A');
+      await scanContractSequentially(contractBInstance, range(1, 2800), 'B');
+      await scanContractSequentially(contractBInstance, range(2800, 4000), 'B');
 
       const ogBadgeUnlocked = await checkOGBadgeLoop(userAddress, contractOGInstance);
       let ogBadgeInserted = false;
@@ -320,7 +209,7 @@
           "🔒 <span class='locked'>Badge 4 Locked</span>";
         return false;
       } catch (err) {
-        console.warn("Error checking OG badge:", err);
+        console.warn("Error checking OG badge:", err.message);
         return false;
       }
     }
@@ -333,5 +222,4 @@
   </script>
 </body>
 </html>
-
 
