@@ -151,59 +151,54 @@
       container.appendChild(slot);
     }
 
-    async function renderBadges({ badge1, badge2, badge3, badge4, ogBadgeUnlocked, badgeURIs }) {
-      badgeGrid.innerHTML = "";
+   async function renderBadges({ badge1, badge2, badge3, ogBadgeUnlocked, badgeURIs }) {
+  badgeGrid.innerHTML = "";
 
-      if (badge1) {
-        const video = document.createElement("video");
-        video.src = "royaltypass.MP4";
-        video.autoplay = true;
-        video.loop = true;
-        video.muted = true;
-        video.playsInline = true;
-        addBadgeSlot(badgeGrid, video);
-      }
+  if (badge1) {
+    const video = document.createElement("video");
+    video.src = "royaltypass.MP4";
+    video.autoplay = true;
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
+    addBadgeSlot(badgeGrid, video);
+  }
 
-      if (badge4) {
-        const video = document.createElement("video");
-        video.autoplay = true;
-        video.loop = true;
-        video.muted = true;
-        video.playsInline = true;
+  badgeURIs.forEach(badge => {
+    // Custom case: Dig it Deep → use local video
+    if (badge.name === "NaNa The Ape – Dig it Deep") {
+      const video = document.createElement("video");
+      video.autoplay = true;
+      video.loop = true;
+      video.muted = true;
+      video.playsInline = true;
 
-        const source = document.createElement("source");
-        source.src = "digitdeep.mp4";
-        source.type = "video/mp4";
+      const source = document.createElement("source");
+      source.src = "digitdeep.mp4";
+      source.type = "video/mp4";
 
-        video.appendChild(source);
-        addBadgeSlot(badgeGrid, video);
-      }
-
-      badgeURIs.forEach(badge => {
-        if (badge.name.includes("Let's Ape")) {
-          const img = document.createElement("img");
-          img.src = badge.src;
-          img.alt = badge.name;
-          img.title = badge.name;
-          addBadgeSlot(badgeGrid, img);
-        } else if (badge.name.includes("$HOES Anthem")) {
-          const img = document.createElement("img");
-          img.src = badge.src;
-          img.alt = badge.name;
-          img.title = badge.name;
-          addBadgeSlot(badgeGrid, img);
-        }
-      });
-
-      if (ogBadgeUnlocked) {
-        const img = document.createElement("img");
-        img.src = "apestrong.jpg";
-        img.alt = "OG Holder Badge";
-        img.title = "OG Holder Badge";
-        addBadgeSlot(badgeGrid, img);
-      }
+      video.appendChild(source);
+      addBadgeSlot(badgeGrid, video);
+      return;
     }
-  </script>
+
+    // Default: display badge as image
+    const img = document.createElement("img");
+    img.src = badge.src;
+    img.alt = badge.name;
+    img.title = badge.name;
+    addBadgeSlot(badgeGrid, img);
+  });
+
+  if (ogBadgeUnlocked) {
+    const img = document.createElement("img");
+    img.src = "apestrong.jpg";
+    img.alt = "OG Holder Badge";
+    img.title = "OG Holder Badge";
+    addBadgeSlot(badgeGrid, img);
+  }
+}
+
 
   <script>
     const contractA = "0xed10cd2183de930c70c812d237d5ee763a9bbc52";
