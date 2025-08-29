@@ -14,22 +14,26 @@
       margin: 0;
       padding: 20px;
     }
+
     header {
       background: url('background.png') center center / cover no-repeat;
       height: 200px;
       margin-bottom: 20px;
     }
+
     .badge-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
       gap: 20px;
       margin-top: 20px;
     }
+
     @media (max-width: 600px) {
       .badge-grid {
         grid-template-columns: repeat(3, 1fr);
       }
     }
+
     .badge-slot {
       width: 100%;
       aspect-ratio: 1 / 1;
@@ -40,42 +44,48 @@
       font-size: 18px;
       background-color: #000;
       color: #fff;
-      overflow: hidden;
     }
-    .badge-slot img, .badge-slot video {
+
+    .badge-slot img,
+    .badge-slot video {
       max-width: 100%;
       max-height: 100%;
-      object-fit: cover;
     }
+
     #loadingIndicator {
-      display: none;
       font-size: 18px;
       color: #fff;
       margin-top: 20px;
     }
+
     #progressBar {
       width: 100%;
       background-color: #333;
       margin-top: 10px;
       border: 1px solid #fff;
     }
+
     #progressBarFill {
       height: 20px;
       width: 0%;
       background-color: #00ffff !important;
       transition: width 0.3s;
     }
+
     .badge-status {
       margin: 6px 0;
       font-weight: bold;
       color: #fff;
     }
+
     .unlocked {
       color: #0f0;
     }
+
     .locked {
       color: #f00;
     }
+
     button {
       background-color: #222;
       color: #fff;
@@ -84,9 +94,11 @@
       font-size: 16px;
       cursor: pointer;
     }
+
     button:hover {
       background-color: #444;
     }
+
     #exitButton {
       display: inline-block;
       background-color: #222;
@@ -98,6 +110,7 @@
       cursor: pointer;
       margin-bottom: 20px;
     }
+
     #exitButton:hover {
       background-color: #444;
     }
@@ -107,12 +120,12 @@
   <a href="index.html" id="exitButton">Exit</a>
 
   <div id="loginSection">
-    <h1>Connect Wallet</h1>
+    <h1>Collectors Book</h1>
     <button id="loginButton">Login with MetaMask</button>
   </div>
 
   <div id="profileSection" style="display:none;">
-    <h2>Mutant Records collection by</h2>
+    <h2>Mutant Records collectibles by</h2>
     <p id="walletAddress"></p>
     <button onclick="logout()">Logout</button>
 
@@ -120,17 +133,87 @@
     <div id="badgeTwoStatus" class="badge-status"></div>
     <div id="badgeThreeStatus" class="badge-status"></div>
     <div id="badgeFourStatus" class="badge-status"></div>
-    <div id="loadingIndicator">Loading your records...</div>
+    <div id="badgeFiveStatus" class="badge-status"></div>
+    <div id="loadingIndicator"><span id="loadingText">Loading your records...</span></div>
     <div id="progressBar"><div id="progressBarFill"></div></div>
 
-    <h3>Your Records</h3>
+    <h3>Mutant Records collectibles</h3>
     <div class="badge-grid" id="badgeGrid"></div>
+
+    <h3>DripHeadz Music</h3>
+    <div class="badge-grid" id="inkspireGrid"></div>
   </div>
+
+  <script>
+    const badgeGrid = document.getElementById("badgeGrid");
+    const inkspireGrid = document.getElementById("inkspireGrid");
+
+    function addBadgeSlot(container, contentElement) {
+      const slot = document.createElement("div");
+      slot.className = "badge-slot";
+      slot.appendChild(contentElement);
+      container.appendChild(slot);
+    }
+
+    async function renderBadges({ badge1, badge2, badge3, ogBadgeUnlocked, badgeURIs, inkspireURIs }) {
+      badgeGrid.innerHTML = "";
+      inkspireGrid.innerHTML = "";
+
+      if (badge1) {
+        const video = document.createElement("video");
+        video.src = "royaltypass.MP4";
+        video.autoplay = true;
+        video.loop = true;
+        video.muted = true;
+        video.playsInline = true;
+        addBadgeSlot(badgeGrid, video);
+      }
+
+      if (badge2) {
+        const match = badgeURIs.find(b => b.name.includes("Let's Ape"));
+        if (match) {
+          const img = document.createElement("img");
+          img.src = match.src;
+          img.alt = match.name;
+          img.title = match.name;
+          addBadgeSlot(badgeGrid, img);
+        }
+      }
+
+      if (badge3) {
+        const match = badgeURIs.find(b => b.name.includes("$HOES Anthem"));
+        if (match) {
+          const img = document.createElement("img");
+          img.src = match.src;
+          img.alt = match.name;
+          img.title = match.name;
+          addBadgeSlot(badgeGrid, img);
+        }
+      }
+
+      if (ogBadgeUnlocked) {
+        const img = document.createElement("img");
+        img.src = "apestrong.jpg";
+        img.alt = "OG Holder Badge";
+        img.title = "OG Holder Badge";
+        addBadgeSlot(badgeGrid, img);
+      }
+
+      inkspireURIs.forEach((item) => {
+        const img = document.createElement("img");
+        img.src = item.src;
+        img.alt = item.name || "Inkspire NFT";
+        img.title = item.name || "Inkspire NFT";
+        addBadgeSlot(inkspireGrid, img);
+      });
+    }
+  </script>
 
   <script>
     const contractA = "0xed10cd2183de930c70c812d237d5ee763a9bbc52";
     const contractB = "0xdfa50db2aa335e8ccd0671ca11abce7938a3ec09";
     const contractOG = "0xbbe59d056e8a1ce9acc0b83574075f41d0aeca07";
+    const inkspireContractAddress = "0x00d48b06b39f76e45966ff11b318059620ac470b";
 
     const contractABI721 = [
       { "constant": true, "inputs": [{ "name": "tokenId", "type": "uint256" }], "name": "ownerOf", "outputs": [{ "name": "owner", "type": "address" }], "type": "function" },
@@ -144,11 +227,7 @@
     const apechainParams = {
       chainId: "33139",
       chainName: "ApeChain",
-      nativeCurrency: {
-        name: "APE",
-        symbol: "APE",
-        decimals: 18
-      },
+      nativeCurrency: { name: "APE", symbol: "APE", decimals: 18 },
       rpcUrls: ["https://apechain.drpc.org"],
       blockExplorerUrls: ["https://apescan.io"]
     };
@@ -158,7 +237,8 @@
     }
 
     function resolveIPFS(uri) {
-      return uri.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + uri.slice(7) : uri;
+      if (!uri.startsWith("ipfs://")) return uri;
+      return "https://ipfs.io/ipfs/" + uri.slice(7);
     }
 
     async function switchToApeChain(provider) {
@@ -190,20 +270,42 @@
       document.getElementById("profileSection").style.display = "block";
       document.getElementById("loadingIndicator").style.display = "block";
 
+      const loadingMessages = [
+        "🧠 Scanning ApeChain...",
+        "🎷 Looking for music in the blockchain...",
+        "🙏 Checking the church...",
+        "🦍 Ape monks decoding grooves...",
+        "🎶 Tuning vinyl in hyperspace...",
+        "🍌 Spinning bananas into beats...",
+        "🔊 Listening for lost records...",
+        "🧬 Synthesizing rare sounds..."
+      ];
+      let messageIndex = 0;
+      const loadingText = document.getElementById("loadingText");
+      const loadingInterval = setInterval(() => {
+        loadingText.innerText = loadingMessages[messageIndex % loadingMessages.length];
+        messageIndex++;
+      }, 2000);
+
       const badgeGrid = document.getElementById("badgeGrid");
+      const inkspireGrid = document.getElementById("inkspireGrid");
       badgeGrid.innerHTML = "";
+      inkspireGrid.innerHTML = "";
 
       const contractAInstance = new ethers.Contract(contractA, contractABI721, provider);
       const contractBInstance = new ethers.Contract(contractB, contractABI721, provider);
       const contractOGInstance = new ethers.Contract(contractOG, contractABI1155, provider);
+      const inkspireInstance = new ethers.Contract(inkspireContractAddress, contractABI721, provider);
 
-      let badge1 = false, badge2 = false, badge3 = false, badge4 = false;
-      const badgeURIs = [];
+      let badge1 = false, badge2 = false, badge3 = false, badge5 = false;
       const seenNames = new Set();
+      const badgeURIs = [];
+      const inkspireURIs = [];
 
-      async function scanContract(contract, tokenIds, label) {
+      async function scanContract(contract, tokenIds, contractLabel) {
         let processed = 0;
         const total = tokenIds.length;
+
         const updateProgress = () => {
           const percent = Math.round((processed / total) * 100);
           document.getElementById("progressBarFill").style.width = percent + "%";
@@ -213,53 +315,44 @@
           try {
             const owner = await contract.ownerOf(tokenId);
             if (owner.toLowerCase() === userAddress.toLowerCase()) {
-              const uri = resolveIPFS(await contract.tokenURI(tokenId));
-              const metadata = await (await fetch(uri)).json();
-              if (!seenNames.has(metadata.name)) {
-                seenNames.add(metadata.name);
-                if (metadata.name === "NaNa The Ape, Rick Starr - $HOES Anthem") badge3 = true;
-                if (metadata.name === "NaNe The Ape & Rick Starr - Let's Ape") badge2 = true;
-                if (!badge1 && label === 'A') badge1 = true;
-                badgeURIs.push({ src: resolveIPFS(metadata.image), name: metadata.name });
+              const uriRaw = await contract.tokenURI(tokenId);
+              const uri = resolveIPFS(uriRaw);
+              const response = await fetch(uri);
+              if (!response.ok) return;
+              const metadata = await response.json();
+              if (seenNames.has(metadata.name)) return;
+              seenNames.add(metadata.name);
+              const image = resolveIPFS(metadata.image);
+
+              if (contractLabel === 'INKSPIRE') {
+                inkspireURIs.push({ src: image, name: metadata.name });
+              } else {
+                badgeURIs.push({ src: image, name: metadata.name });
               }
+
+              if (metadata.name === "NaNa The Ape, Rick Starr - $HOES Anthem") badge3 = true;
+              if (metadata.name === "NaNe The Ape & Rick Starr - Let's Ape") badge2 = true;
+              if (!badge1 && contractLabel === 'A') badge1 = true;
             }
-          } catch (e) {
-            console.warn("Error processing token:", tokenId, e);
-          } finally {
-            processed++;
-            updateProgress();
-          }
+          } catch (_) {} finally { processed++; updateProgress(); }
         }));
       }
 
       await scanContract(contractAInstance, range(1, 69), 'A');
       await scanContract(contractBInstance, range(1, 420), 'B');
       await scanContract(contractBInstance, range(2800, 4000), 'B');
+      await scanContract(inkspireInstance, range(1, 100), 'INKSPIRE');
 
-      // Check OG badge
-      try {
-        for (let tokenId = 0; tokenId < 100; tokenId++) {
-          const balance = await contractOGInstance.balanceOf(userAddress, tokenId);
-          if (balance.gt(0)) {
-            badge4 = true;
-            break;
-          }
-        }
-      } catch (e) {
-        console.warn("Error checking OG Badge:", e);
-      }
+      if (inkspireURIs.length > 0) badge5 = true;
 
-      // Populate grid
-      for (let i = 0; i < 10; i++) {
+      const ogBadgeUnlocked = await checkOGBadgeLoop(userAddress, contractOGInstance);
+      let ogBadgeInserted = false;
+
+      for (let i = 0; i < 6; i++) {
         const slot = document.createElement("div");
         slot.className = "badge-slot";
 
-        if (i === 0 && badge4) {
-          const img = document.createElement("img");
-          img.src = "apestrong.jpg";
-          img.alt = "OG Holder Badge";
-          slot.appendChild(img);
-        } else if (i === 1 && badge1) {
+        if (i === 0 && badge1) {
           const video = document.createElement("video");
           video.src = "royaltypass.MP4";
           video.autoplay = true;
@@ -267,17 +360,18 @@
           video.muted = true;
           video.playsInline = true;
           slot.appendChild(video);
-        } else if (i < badgeURIs.length + 2) {
-          const badge = badgeURIs[i - 2];
-          // Skip rendering metadata if it's the Royalty Pass (badge1)
-          if (badge && badge.name !== "NaNe The Ape & Rick Starr - Let's Ape" && badge.name !== "NaNa The Ape, Rick Starr - $HOES Anthem") {
-            const img = document.createElement("img");
-            img.src = badge.src;
-            img.alt = "Mutant Record";
-            slot.appendChild(img);
-          } else {
-            slot.innerText = "Empty Record Slot";
-          }
+        } else if (i < badgeURIs.length) {
+          const img = document.createElement("img");
+          img.src = badgeURIs[i].src;
+          img.alt = badgeURIs[i].name || "NFT Image";
+          slot.title = badgeURIs[i].name || "NFT";
+          slot.appendChild(img);
+        } else if (ogBadgeUnlocked && !ogBadgeInserted) {
+          const img = document.createElement("img");
+          img.src = "apestrong.jpg";
+          img.alt = "OG Holder Badge";
+          slot.appendChild(img);
+          ogBadgeInserted = true;
         } else {
           slot.innerText = "Empty Record Slot";
         }
@@ -285,39 +379,63 @@
         badgeGrid.appendChild(slot);
       }
 
-      // Set badge statuses
+      inkspireURIs.forEach((item) => {
+        const slot = document.createElement("div");
+        slot.className = "badge-slot";
+        const img = document.createElement("img");
+        img.src = item.src;
+        img.alt = item.name || "Inkspire NFT";
+        img.title = item.name || "Inkspire NFT";
+        slot.appendChild(img);
+        inkspireGrid.appendChild(slot);
+      });
+
+      clearInterval(loadingInterval);
+      document.getElementById("loadingIndicator").style.display = "none";
+
       document.getElementById("badgeOneStatus").innerHTML = badge1
-        ? "✅ <span class='unlocked'>Badge 1 Unlocked (any NFT from contractA)</span>"
+        ? "✅ <span class='unlocked'>Royalty Music Pass Unlock</span>"
         : "🔒 <span class='locked'>Badge 1 Locked</span>";
+
       document.getElementById("badgeTwoStatus").innerHTML = badge2
         ? "✅ <span class='unlocked'>Badge 2 Unlocked (\"Let's Ape\")</span>"
         : "🔒 <span class='locked'>Badge 2 Locked</span>";
+
       document.getElementById("badgeThreeStatus").innerHTML = badge3
         ? "✅ <span class='unlocked'>Badge 3 Unlocked (\"$HOES Anthem\")</span>"
         : "🔒 <span class='locked'>Badge 3 Locked</span>";
-      document.getElementById("badgeFourStatus").innerHTML = badge4
-        ? "✅ <span class='unlocked'>Badge 4 Unlocked (OG Holder)</span>"
-        : "🔒 <span class='locked'>Badge 4 Locked</span>";
 
-      document.getElementById("loadingIndicator").style.display = "none";
+      document.getElementById("badgeFiveStatus").innerHTML = badge5
+        ? "✅ <span class='unlocked'>DripHeadz</span>"
+        : "🔒 <span class='locked'>Dripheadz NFT Not Found</span>";
     }
 
+    async function checkOGBadgeLoop(userAddress, contractOGInstance) {
+      try {
+        for (let tokenId = 0; tokenId < 100; tokenId++) {
+          const balance = await contractOGInstance.balanceOf(userAddress, tokenId);
+          if (balance.gt(0)) {
+            document.getElementById("badgeFourStatus").innerHTML =
+              "✅ <span class='unlocked'>OG Supporter</span>";
+            return true;
+          }
+        }
+        document.getElementById("badgeFourStatus").innerHTML =
+          "🔒 <span class='locked'>Badge 4 Locked</span>";
+        return false;
+      } catch (err) {
+        console.warn("Error checking OG badge:", err);
+        return false;
+      }
+    }
+
+    document.getElementById("loginButton").addEventListener("click", connectWallet);
     function logout() {
       location.reload();
     }
-
-    document.getElementById("loginButton").onclick = connectWallet;
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
 
 
 
