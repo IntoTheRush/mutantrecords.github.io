@@ -150,49 +150,51 @@
       container.appendChild(slot);
     }
 
-    async function renderBadges({ badge1, badge2, badge3, ogBadgeUnlocked, badgeURIs }) {
-      badgeGrid.innerHTML = "";
+   async function renderBadges({ badge1, badge2, badge3, ogBadgeUnlocked, badgeURIs }) {
+  badgeGrid.innerHTML = "";
 
-      if (badge1) {
-        const video = document.createElement("video");
-        video.src = "royaltypass.MP4";
-        video.autoplay = true;
-        video.loop = true;
-        video.muted = true;
-        video.playsInline = true;
-        addBadgeSlot(badgeGrid, video);
-      }
+  if (badge1) {
+    const video = document.createElement("video");
+    video.src = "royaltypass.MP4";
+    video.autoplay = true;
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
+    addBadgeSlot(badgeGrid, video);
+  }
 
-      if (badge2) {
-        const match = badgeURIs.find(b => b.name.includes("Let's Ape"));
-        if (match) {
-          const img = document.createElement("img");
-          img.src = match.src;
-          img.alt = match.name;
-          img.title = match.name;
-          addBadgeSlot(badgeGrid, img);
-        }
-      }
-
-      if (badge3) {
-        const match = badgeURIs.find(b => b.name.includes("$HOES Anthem"));
-        if (match) {
-          const img = document.createElement("img");
-          img.src = match.src;
-          img.alt = match.name;
-          img.title = match.name;
-          addBadgeSlot(badgeGrid, img);
-        }
-      }
-
-      if (ogBadgeUnlocked) {
-        const img = document.createElement("img");
-        img.src = "apestrong.jpg";
-        img.alt = "OG Holder Badge";
-        img.title = "OG Holder Badge";
-        addBadgeSlot(badgeGrid, img);
-      }
+  badgeURIs.forEach(badge => {
+    if (badge.name === "Dig It Deep") {
+      const video = document.createElement("video");
+      video.src = "digitdeep.mov";
+      video.autoplay = true;
+      video.loop = true;
+      video.muted = true;
+      video.playsInline = true;
+      addBadgeSlot(badgeGrid, video);
+    } else if (badge.name.includes("Let's Ape")) {
+      const img = document.createElement("img");
+      img.src = badge.src;
+      img.alt = badge.name;
+      img.title = badge.name;
+      addBadgeSlot(badgeGrid, img);
+    } else if (badge.name.includes("$HOES Anthem")) {
+      const img = document.createElement("img");
+      img.src = badge.src;
+      img.alt = badge.name;
+      img.title = badge.name;
+      addBadgeSlot(badgeGrid, img);
     }
+  });
+
+  if (ogBadgeUnlocked) {
+    const img = document.createElement("img");
+    img.src = "apestrong.jpg";
+    img.alt = "OG Holder Badge";
+    img.title = "OG Holder Badge";
+    addBadgeSlot(badgeGrid, img);
+  }
+}
   </script>
 
   <script>
