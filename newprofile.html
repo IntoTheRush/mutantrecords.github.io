@@ -163,15 +163,21 @@
     addBadgeSlot(badgeGrid, video);
   }
 
-  badgeURIs.forEach(badge => {
-    if (badge.name === "Dig it Deep") {
-      const video = document.createElement("video");
-      video.src = "digitdeep.mp4";
-      video.autoplay = true;
-      video.loop = true;
-      video.muted = true;
-      video.playsInline = true;
-      addBadgeSlot(badgeGrid, video);
+ if (badge.name === "Dig it Deep") {
+  const video = document.createElement("video");
+  video.autoplay = true;
+  video.loop = true;
+  video.muted = true;
+  video.playsInline = true;
+  video.innerHTML = "Your browser does not support the video tag.";
+
+  const source = document.createElement("source");
+  source.src = "digitdeep.mp4";
+  source.type = "video/mp4";
+
+  video.appendChild(source);
+  addBadgeSlot(badgeGrid, video);
+}
     } else if (badge.name.includes("Let's Ape")) {
       const img = document.createElement("img");
       img.src = badge.src;
